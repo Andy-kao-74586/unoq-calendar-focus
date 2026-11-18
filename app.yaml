@@ -1,0 +1,5 @@
+name: UNO Q 智慧日曆計時器
+icon: ⏳
+description: Automatic calendar activity countdown, preparation reminders and LED marquee.
+bricks:
+  - arduino:web_ui

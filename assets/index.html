@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <script>
+    // App Lab opens the numeric loopback address; Google OAuth uses localhost.
+    if (location.origin === "http://127.0.0.1:7000") {
+      const target = new URL(location.href);
+      target.hostname = "localhost";
+      location.replace(target.href);
+    }
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UNO Q 智慧日曆計時器</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+  <script src="calendar.js" defer></script>
+</head>
+<body>
+  <main>
+    <header><span class="brand">UNO Q 智慧日曆計時器 <small>SMART CALENDAR TIMER · 自動行程模式</small></span><span id="connection" class="badge">正在連線</span></header>
+    <div class="layout">
+      <section class="timer-card" aria-label="專注計時器">
+        <div class="eyebrow">讓桌上的時間，跟著你的行程走。</div>
+        <div class="stage"><span id="phase">準備專注</span><span id="demo" class="badge demo" hidden>示範模式 · 秒</span></div>
+        <div id="time" class="time" role="timer" aria-label="剩餘時間">--:--</div>
+        <p id="end-time" class="end-time">剩餘時間 · 分：秒</p>
+        <div class="progress"><div id="progress-fill"></div></div>
+        <p id="hint">正在讀取 UNO Q 的計時狀態…</p>
+        <div class="controls">
+          <button id="primary" class="primary" disabled>開始專注</button>
+          <button id="reset" disabled>重設本輪</button>
+        </div>
+        <p id="error" class="error" role="alert"></p>
+        <p id="calendar-notice" class="note"></p>
+        <section class="calendar-panel">
+          <div class="calendar-heading"><h2>跟著日曆，自動切換</h2><span id="calendar-badge" class="badge">未連接日曆</span></div>
+          <p id="calendar-message" role="status">連接 Google 日曆，依行程空檔安排專注與休息。</p>
+          <div id="calendar-content" hidden>
+            <label class="check"><input id="follow-calendar" type="checkbox" checked>自動跟隨日曆：準備提醒、活動倒數、LED 跑馬燈</label>
+            <p class="note">連接後自動啟用。行程會暫停專注；行程結束後，手動繼續原本的專注。</p>
+            <div class="next-event"><span id="event-caption">下一個忙碌行程</span><strong id="next-event-title">—</strong><span id="next-event-time">—</span></div>
+            <label for="buffer-minutes">行程前準備時間 <span>分鐘</span></label>
+            <input id="buffer-minutes" type="number" min="1" max="60" step="1" value="5">
+            <p id="plan-text" class="plan-text"></p>
+            <button id="calendar-start" class="primary" disabled>依建議開始專注</button>
+            <div class="calendar-actions"><button id="calendar-refresh">重新同步</button><button id="calendar-disconnect">中斷日曆連線</button></div>
+            <p id="calendar-updated" class="note"></p>
+          </div>
+          <details id="google-settings">
+            <summary>設定 Google 日曆連線</summary>
+            <p class="note">首次使用請依隨附 GOOGLE_SETUP.md 建立 Google OAuth 用戶端。只讀取主日曆，不修改行程。</p>
+            <label for="google-client-id">OAuth 用戶端 ID</label>
+            <input id="google-client-id" type="password" autocomplete="off" placeholder="貼上你的 Web 用戶端 ID">
+            <button id="load-google">載入 Google 登入元件</button>
+            <button id="connect-google" disabled>連接 Google 日曆</button>
+            <p class="note">授權資料只暫存在記憶體；到期後重新連接。錄影前請收合本區。</p>
+          </details>
+        </section>
+        <div class="stats"><div><b id="count">0</b><span>本次啟動完成的專注輪數</span></div><div><b id="demo-count">0</b><span>示範完成輪數（另外計算）</span></div></div>
+      </section>
+      <aside>
+        <section class="panel">
+          <h2>安排你的節奏</h2>
+          <form id="settings">
+            <label for="focus-minutes">專注時間 <span>分鐘</span></label>
+            <input id="focus-minutes" type="number" min="1" max="180" step="1" value="25" required>
+            <label for="break-minutes">休息時間 <span>分鐘</span></label>
+            <input id="break-minutes" type="number" min="1" max="60" step="1" value="5" required>
+            <label class="check"><input id="demo-setting" type="checkbox">示範模式：專注 30 秒／休息 10 秒</label>
+            <button id="apply" type="submit" disabled>套用設定</button>
+          </form>
+          <p class="note">修改時間前請先重設。專注結束會自動開始休息；休息結束後，由你開始下一輪。</p>
+        </section>
+        <section class="panel board-panel">
+          <h2>桌上的 UNO Q</h2>
+          <div id="matrix-number" class="matrix-number">--</div>
+          <div id="matrix-live" class="matrix" hidden aria-label="板子預計顯示的跑馬燈與倒數"></div>
+          <p id="board-status" role="status">等待 LED 連線狀態</p>
+          <p class="note">行程模式輪播英文活動提示與倒數，例如晚餐顯示 DINNER；完整中文名稱顯示在左側。未辨識的中文活動顯示 EVENT，可在日曆標題加 [英文短名] 自訂。倒數以分鐘向上取整，最後 59 秒顯示秒數。此處是顯示示意，請以實體 LED 驗收。</p>
+        </section>
+      </aside>
+    </div>
+    <footer>計時在 UNO Q 上執行。關閉網頁仍會繼續；停止 App 或斷電會清除本次計時與輪數。</footer>
+  </main>
+</body>
+</html>
